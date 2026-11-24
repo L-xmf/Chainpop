@@ -1,0 +1,15 @@
+import os
+import zipfile
+
+with zipfile.ZipFile("output/chainpop-github-v3.zip", "r") as zf:
+    html = zf.read("index.html").decode("utf-8")
+
+# Let's see how B.arcadeLvl, lvl, menu(), and boot currently behave
+idx_boot = html.find("lvl=B.arcadeLvl||1;")
+print(html[idx_boot-100:idx_boot+250])
+print("---")
+idx_fin = html.find("function fin(){")
+print(html[idx_fin:idx_fin+1100])
+print("---")
+idx_check = html.find("function checkArcadeLevelComplete(){")
+print(html[idx_check:idx_check+900])
