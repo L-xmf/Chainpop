@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d081c">
+<title>Chainpop</title>
+<style>
+:root{
+  --bg:#0d081c;--dot:#231845;--panel:#171030;--panel2:#211742;
+  --ink:#f7f4ff;--mute:#a398cc;--line:#32245e;
+  --btn:linear-gradient(135deg,#ff2a85,#8b5cf6);--onbtn:#fff;
+  --c0:#ff2a85;--c1:#00e5ff;--c2:#9eff00;--c3:#ff9e00;--c4:#9d4edd;
+  --glow:0 0 24px rgba(157,78,221,.28);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+body.sk-cyber{
+  --bg:#050b14;--dot:#0f253d;--panel:#0a1626;--panel2:#102238;--line:#1b3b61;
+  --c0:#ff0055;--c1:#00f0ff;--c2:#ccff00;--c3:#ffaa00;--c4:#b829ea;
+  --glow:0 0 28px rgba(0,240,255,.35)
+}
+body.sk-void{
+  --bg:#040406;--dot:#16161f;--panel:#0c0c12;--panel2:#151520;--line:#26263a;
+  --c0:#ff1e56;--c1:#00fff5;--c2:#7bff00;--c3:#ffac41;--c4:#c77dff;
+  --glow:0 0 32px rgba(255,30,86,.35)
+}
+body.sk-gold{
+  --bg:#140e04;--dot:#2e2009;--panel:#211707;--panel2:#2e210b;--line:#4d3712;
+  --c0:#ff4d6d;--c1:#00f5d4;--c2:#fee440;--c3:#ff9e00;--c4:#f15bb5;
+  --glow:0 0 32px rgba(254,228,64,.35)
+}
+body.sk-godmode{
+  --bg:#090214;--dot:#2a0845;--panel:#160529;--panel2:#240c42;--line:#5a1b8a;
+  --c0:#ff007f;--c1:#00ffff;--c2:#ffff00;--c3:#ff7700;--c4:#9900ff;
+  --glow:0 0 45px rgba(255,0,127,.65)
+}
+body.sk-retro .cell{border-radius:4px!important;font-family:monospace;box-shadow:inset -3px -3px 0 rgba(0,0,0,.45),inset 3px 3px 0 rgba(255,255,255,.4)!important}
+body.sk-retro #grid{border-radius:6px!important}
+
+html,body{height:100%;margin:0;width:100%}
+body{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(157,78,221,.22),transparent 58%),
+    radial-gradient(var(--dot) 1.6px,transparent 1.8px) 0 0/22px 22px,
+    var(--bg);
+  color:var(--ink);
+  font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:hidden;
+  transition:box-shadow .3s,background .3s
+}
+body.frozen{box-shadow:inset 0 0 55px rgba(0,229,255,.55)}
+.w{width:min(92vw,384px)}
+.hd{display:flex;justify-content:space-between;align-items:center}
+.brand{
+  display:flex;align-items:center;gap:6px;
+  font-size:1.35rem;font-weight:900;letter-spacing:-.5px;
+  background:linear-gradient(90deg,var(--c0),var(--c3),var(--c1));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 2px 10px rgba(255,42,133,.35))
+}
+.ic{
+  font:inherit;border:0;background:var(--panel);color:var(--ink);
+  border-radius:11px;min-width:36px;height:33px;padding:0 9px;cursor:pointer;margin-left:5px;
+  box-shadow:inset 0 0 0 1.5px var(--line),0 3px 10px rgba(0,0,0,.25);
+  transition:transform .1s,box-shadow .15s;font-weight:bold;font-size:.82rem
+}
+.ic:active{transform:scale(.9)}
+.lvl-pill{
+  display:inline-flex;align-items:center;gap:4px;
+  background:linear-gradient(90deg,var(--c2),var(--c1));color:#0d081c;
+  font-weight:900;font-size:.74rem;padding:3px 9px;border-radius:99px;
+  letter-spacing:.4px;box-shadow:0 0 14px rgba(158,255,0,.4)
+}
+.perk-strip{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;min-height:18px}
+.pk-tag{
+  font-size:.68rem;font-weight:900;padding:2px 8px;border-radius:99px;
+  background:rgba(255,255,255,.07);color:var(--c1);border:1px solid rgba(0,229,255,.28)
+}
+.pk-tag.shield{color:var(--c2);border-color:rgba(158,255,0,.4);box-shadow:0 0 10px rgba(158,255,0,.2)}
+.pk-tag.used{opacity:.35;text-decoration:line-through}
+
+.coin-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:var(--panel);color:#ffd166;font-weight:900;font-size:.82rem;
+  padding:4px 10px;border-radius:99px;
+  box-shadow:inset 0 0 0 1.5px rgba(255,209,102,.35),0 3px 12px rgba(0,0,0,.25)
+}
+.rank-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(90deg,rgba(255,42,133,.2),rgba(139,92,246,.2));
+  color:#fff;font-weight:900;font-size:.76rem;
+  padding:4px 10px;border-radius:99px;
+  border:1.5px solid rgba(255,42,133,.45);
+  box-shadow:0 0 14px rgba(255,42,133,.2)
+}
+.top{display:flex;justify-content:space-between;align-items:flex-end}
+.top div{display:flex;flex-direction:column}
+.top small{color:var(--mute);font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.7px}
+.top b{font-size:2rem;line-height:1;font-variant-numeric:tabular-nums;transition:transform .12s}
+.pop-num{transform:scale(1.26)}
+.low{color:#ff2a85;animation:pu .42s infinite alternate}
+.frz{color:#00e5ff!important;text-shadow:0 0 14px rgba(0,229,255,.7)}
+@keyframes pu{to{transform:scale(1.22)}}
+.bar{height:9px;border-radius:99px;background:var(--panel2);overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+#fill{height:100%;background:linear-gradient(90deg,var(--c1),var(--c4),var(--c0));transition:width .1s linear;box-shadow:0 0 12px rgba(255,42,133,.5)}
+#fill.frz-bar{background:linear-gradient(90deg,#90f1ef,#00e5ff)}
+.lvl-bar{height:7px;border-radius:99px;background:var(--panel2);overflow:hidden;margin-top:1px;box-shadow:inset 0 0 0 1px var(--line)}
+#lvl-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--c2),var(--c3));transition:width .2s ease-out;box-shadow:0 0 10px rgba(158,255,0,.5)}
+.board{position:relative}
+#grid{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:5px;aspect-ratio:1;
+  background:var(--panel);padding:8px;border-radius:20px;
+  box-shadow:0 12px 34px rgba(0,0,0,.45),inset 0 0 0 2px var(--line),var(--glow);
+  box-sizing:border-box;transition:box-shadow .25s,transform .2s
+}
+#grid.combo-glow{box-shadow:0 0 32px rgba(255,42,133,.65),inset 0 0 0 2px var(--c0)}
+#fx{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
+.cell{
+  border:0;border-radius:13px;font-size:1.38rem;padding:0;
+  color:rgba(255,255,255,.97);text-shadow:0 1px 3px rgba(0,0,0,.45);
+  box-shadow:inset 0 -4px 0 rgba(0,0,0,.28),inset 0 2.5px 0 rgba(255,255,255,.38),0 2px 6px rgba(0,0,0,.25);
+  cursor:pointer;transition:transform .08s,filter .15s;
+  display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden
+}
+.cell::after{
+  content:"";position:absolute;top:-40%;left:-40%;width:60%;height:60%;
+  background:radial-gradient(circle,rgba(255,255,255,.35),transparent 70%);
+  pointer-events:none
+}
+.cell:active{transform:scale(.8)}
+.cell.n{animation:d .34s cubic-bezier(.34,1.56,.64,1)}
+@keyframes d{0%{transform:translateY(-85%) scale(.55);opacity:0}70%{transform:translateY(6%) scale(1.05);opacity:1}100%{transform:none;opacity:1}}
+.cell.sp-joker{background:conic-gradient(from 0deg,var(--c0),var(--c3),var(--c2),var(--c1),var(--c4),var(--c0))!important;animation:pulseSp 1s ease-in-out infinite alternate;box-shadow:0 0 14px rgba(255,42,133,.75)}
+.cell.sp-ice{background:radial-gradient(circle at 30% 25%,#ffffff,#7ee8fa 45%,#00e5ff)!important;box-shadow:inset 0 -4px 0 rgba(0,119,182,.4),0 0 14px rgba(0,229,255,.8);animation:pulseSp 1s ease-in-out infinite alternate}
+.cell.sp-bomb{background:radial-gradient(circle at 30% 25%,#6b5b95,#1e1538)!important;box-shadow:inset 0 -4px 0 rgba(0,0,0,.6),0 0 14px rgba(255,158,0,.75);animation:pulseSp 1s ease-in-out infinite alternate}
+@keyframes pulseSp{from{transform:scale(.92) rotate(-3deg)}to{transform:scale(1.06) rotate(3deg)}}
+.sh{animation:sh .34s}
+@keyframes sh{20%{transform:translateX(-9px) rotate(-1.5deg)}50%{transform:translateX(9px) rotate(1.5deg)}80%{transform:translateX(-4px)}}
+@media (prefers-reduced-motion:reduce){.cell.n,.sh,.low,.sp-joker,.sp-ice,.sp-bomb{animation:none}}
+.hint{color:var(--mute);font-size:.78rem;text-align:center;min-height:1.1em;font-weight:bold;letter-spacing:.2px}
+
+#ov{
+  position:fixed;inset:0;z-index:50;overflow:auto;display:flex;
+  background:
+    radial-gradient(circle at 50% 12%,rgba(255,42,133,.16),transparent 52%),
+    radial-gradient(var(--dot) 1.6px,transparent 1.8px) 0 0/22px 22px,
+    var(--bg);
+  padding:env(safe-area-inset-top,12px) 14px 20px;box-sizing:border-box
+}
+#ov[hidden]{display:none}
+.in{margin:auto;width:min(92vw,384px);display:flex;flex-direction:column;gap:8px;text-align:center;animation:fadeUp .26s ease-out}
+@keyframes fadeUp{from{transform:translateY(14px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+.logo-hero{
+  font-size:2.3rem;font-weight:900;letter-spacing:-1px;margin:0;line-height:1.05;
+  background:linear-gradient(90deg,#ff2a85,#ff9e00,#00e5ff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 4px 18px rgba(255,42,133,.35))
+}
+h1{margin:0;font-size:1.9rem;letter-spacing:-.5px}
+.in p{margin:0;color:var(--mute);font-size:.86rem;line-height:1.35}
+.in b{color:var(--ink)}
+.rk{font-size:1.2rem;font-weight:900;color:var(--c0)!important;text-shadow:0 0 14px rgba(255,42,133,.4)}
+
+.goal-banner{
+  background:linear-gradient(135deg,var(--panel2),rgba(255,42,133,.14));
+  border:1.5px solid rgba(255,42,133,.4);border-radius:14px;padding:8px 12px;
+  display:flex;align-items:center;justify-content:space-between;text-align:left;gap:8px;
+  box-shadow:0 4px 16px rgba(0,0,0,.25);cursor:pointer
+}
+.goal-banner small{display:block;color:var(--mute);font-size:.7rem;text-transform:uppercase;font-weight:900;letter-spacing:.5px}
+.goal-banner b{font-size:.86rem;color:#fff}
+.goal-badge{background:var(--c0);color:#fff;font-weight:900;font-size:.74rem;padding:4px 9px;border-radius:99px;white-space:nowrap}
+
+.b{
+  font:inherit;font-weight:900;padding:11px 15px;border-radius:14px;border:0;
+  background:var(--btn);color:var(--onbtn);cursor:pointer;
+  display:flex;flex-direction:column;gap:2px;
+  box-shadow:0 6px 18px rgba(139,92,246,.3);
+  transition:transform .1s,box-shadow .15s
+}
+.b:active{transform:scale(.97)}
+.b:disabled{opacity:.42;cursor:not-allowed;transform:none;box-shadow:none}
+.b small{font-weight:normal;opacity:.85;font-size:.76rem}
+.b.g{background:var(--panel);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.b.card{
+  text-align:left;background:var(--panel);color:var(--ink);
+  box-shadow:0 4px 14px rgba(0,0,0,.25),inset 0 0 0 1.5px var(--line),inset 6px 0 0 var(--c4)
+}
+.b.card.hot{box-shadow:0 4px 14px rgba(255,42,133,.16),inset 0 0 0 1.5px var(--line),inset 6px 0 0 var(--c0)}
+.b.card.ice{box-shadow:0 4px 14px rgba(0,229,255,.14),inset 0 0 0 1.5px var(--line),inset 6px 0 0 var(--c1)}
+.b.card.grn{box-shadow:0 4px 14px rgba(158,255,0,.14),inset 0 0 0 1.5px var(--line),inset 6px 0 0 var(--c2)}
+.b.card.gold{box-shadow:0 4px 14px rgba(255,209,102,.2),inset 0 0 0 1.5px rgba(255,209,102,.5),inset 6px 0 0 #ffd166}
+
+.row{display:flex;gap:7px;justify-content:center}
+.diff-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.diff-btn{
+  font:inherit;font-size:.78rem;font-weight:900;padding:7px 4px;border-radius:12px;
+  border:1.5px solid var(--line);background:var(--panel);color:var(--ink);
+  cursor:pointer;transition:all .14s;display:flex;flex-direction:column;align-items:center;gap:2px
+}
+.diff-btn small{font-size:.66rem;font-weight:bold;color:var(--mute)}
+.diff-btn.act{
+  border-color:var(--c0);
+  background:linear-gradient(160deg,var(--panel2),rgba(255,42,133,.2));
+  box-shadow:0 0 16px rgba(255,42,133,.3);
+  transform:translateY(-1px)
+}
+.diff-btn.act small{color:#ffd166}
+
+.stat-box{
+  background:var(--panel);border-radius:15px;padding:11px;
+  box-shadow:inset 0 0 0 1.5px var(--line);
+  display:flex;flex-direction:column;gap:5px;font-size:.86rem
+}
+.unlock-box{
+  background:linear-gradient(135deg,rgba(158,255,0,.16),rgba(0,229,255,.16));
+  border:2px solid var(--c2);border-radius:15px;padding:11px;
+  box-shadow:0 0 24px rgba(158,255,0,.25);
+  animation:popUnlock .45s cubic-bezier(.34,1.56,.64,1)
+}
+@keyframes popUnlock{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+
+input{
+  font:inherit;width:100%;box-sizing:border-box;text-align:center;padding:11px;
+  border-radius:12px;border:1.5px solid var(--line);background:var(--panel);color:var(--ink);
+  text-transform:uppercase;font-weight:bold;font-size:1.1rem
+}
+input.s{text-transform:none}
+label{font-size:.8rem;color:var(--mute);font-weight:bold}
+.badges{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left;margin-top:4px}
+.bdg{
+  background:var(--panel);padding:9px 10px;border-radius:13px;
+  box-shadow:inset 0 0 0 1.5px var(--line);font-size:.78rem;opacity:.45;
+  display:flex;align-items:center;gap:8px
+}
+.bdg.on{opacity:1;box-shadow:inset 0 0 0 1.5px var(--c2),0 0 14px rgba(158,255,0,.15);background:linear-gradient(135deg,var(--panel),rgba(158,255,0,.12))}
+.bdg span{font-size:1.3rem}
+
+.roadmap{max-height:210px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;text-align:left;padding-right:4px}
+.rm-item{
+  background:var(--panel);border-radius:14px;padding:10px 12px;
+  box-shadow:inset 0 0 0 1.5px var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px
+}
+.rm-item.unlocked{box-shadow:inset 0 0 0 1.5px var(--c2);background:linear-gradient(90deg,var(--panel),rgba(158,255,0,.09))}
+.rm-item.locked{opacity:.65}
+.rm-lvl{font-weight:900;font-size:.82rem;padding:4px 9px;border-radius:9px;background:var(--panel2);color:var(--c1);white-space:nowrap}
+.rm-item.unlocked .rm-lvl{background:var(--c2);color:#0d081c}
+.skin-btn{
+  font:inherit;font-size:.76rem;font-weight:900;padding:6px 11px;border-radius:10px;border:0;
+  background:var(--btn);color:#fff;cursor:pointer;white-space:nowrap
+}
+.skin-btn.eq{background:var(--c2);color:#0d081c}
+
+.toast{
+  position:fixed;top:14px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(90deg,var(--c0),var(--c4));color:#fff;
+  padding:10px 18px;border-radius:99px;font-weight:900;font-size:.86rem;z-index:200;
+  box-shadow:0 8px 24px rgba(255,42,133,.5);animation:tin .3s ease-out;white-space:nowrap
+}
+@keyframes tin{from{transform:translate(-50%,-30px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+</style>
+</head>
+<body>
+<div class="w hd"><div style="display:flex;align-items:center"><span class="brand">CHAINPOP ⚡</span><span class="lvl-pill" id="lvl_badge" hidden>LVL 1</span></div><div><button class="ic" id="mu" aria-label="Ton" type="button">🔊</button><button class="ic" id="q" aria-label="Menü" type="button">✕</button></div></div>
+<div class="w perk-strip" id="perk_strip"></div>
+<div class="w top"><div><small id="lbl_pts">Punkte</small><b id="sc">0</b></div><div><small id="lbl_cb">Combo</small><b id="cb">x1</b></div><div style="align-items:flex-end"><small id="tlbl">Zeit</small><b id="tm">45</b></div></div>
+<div class="w bar"><div id="fill"></div></div>
+<div class="w lvl-bar" id="lvl_wrap" hidden><div id="lvl-fill"></div></div>
+<div class="w board"><div id="grid"></div><canvas id="fx"></canvas></div>
+<div class="w hint" id="info">&nbsp;</div>
+<div id="ov" hidden></div>
+
+<script>
+const N=7,BM=5,JK=6,IC=7,$=i=>document.getElementById(i);
+const SH=["♥","●","▲","■","★"];
+const AL="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const REVIVE_COST=150;
+
+const DIFFS={
+  easy:{cols:4,pen:1,time:48,coinMult:0.6,coinLabel:"0.6x 🪙"},
+  normal:{cols:5,pen:2,time:42,coinMult:1.0,coinLabel:"1.0x 🪙"},
+  hard:{cols:5,pen:4,time:32,coinMult:1.75,coinLabel:"1.75x 🪙"}
+};
+
+const REWARDS=[
+  {lvl:1,type:"skin",skin:"default",ic:"🔮",deT:"Neon-Standard",enT:"Neon Default",deD:"Der klassische Basis-Look",enD:"Classic base style"},
+  {lvl:2,type:"perk",ic:"🎖️",deT:"Zeit-Boost (+3s Start)",enT:"Time Boost (+3s start)",deD:"Dauerhaft +3s Zeit in jedem Solo-Spiel",enD:"Permanent +3s time in solo mode"},
+  {lvl:3,type:"skin",skin:"cyber",ic:"💠",deT:"Skin: Cyber-Matrix",enT:"Skin: Cyber Matrix",deD:"Eiskaltes High-Tech Neon-Design",enD:"Ice-cold high-tech neon design"},
+  {lvl:4,type:"perk",ic:"🌈",deT:"Perk: Start-Joker",enT:"Perk: Start Joker",deD:"Jede Runde startet mit einem Farb-Joker",enD:"Every round starts with a Color Joker"},
+  {lvl:6,type:"perk",ic:"🛡️",deT:"Perk: Combo-Schutzschild",enT:"Perk: Combo Shield",deD:"Erster Fehlklick pro Runde kostet keine Zeit",enD:"First misclick per round costs no time"},
+  {lvl:8,type:"skin",skin:"retro",ic:"👾",deT:"Skin: 8-Bit Arcade",enT:"Skin: 8-Bit Arcade",deD:"Kantiger Retro-Klassiker für Profis",enD:"Blocky retro arcade style"},
+  {lvl:10,type:"skin",skin:"gold",ic:"👑",deT:"Skin: Royal Gold",enT:"Skin: Royal Gold",deD:"Edles Gold-Design als Statussymbol",enD:"Prestige gold board design"},
+  {lvl:15,type:"perk",ic:"⚡",deT:"Turbo-Combo (+10% Pkt)",enT:"Turbo Combo (+10% Pts)",deD:"Mehr Punkte für lange Kettenreaktionen",enD:"Bonus points for long chains"},
+  {lvl:20,type:"skin",skin:"cyber",ic:"💎",deT:"Ketten-Meister Titel",enT:"Chain Master Title",deD:"Exklusiver Prestige-Rang für Kenner",enD:"Exclusive prestige rank badge"},
+  {lvl:25,type:"perk",ic:"⏱️",deT:"Zeit-Dehnung (+5s Start)",enT:"Time Stretch (+5s start)",deD:"Noch mehr Puffer für deine Runden",enD:"Even more buffer for your runs"},
+  {lvl:30,type:"skin",skin:"void",ic:"🖤",deT:"Skin: Dark Void Pro",enT:"Skin: Dark Void Pro",deD:"Tiefschwarzes Deep-Space-Design",enD:"Pitch-black deep space theme"},
+  {lvl:35,type:"perk",ic:"🎯",deT:"Präzisions-Bonus",enT:"Precision Bonus",deD:"Erhöht die Chance auf Spezial-Boni",enD:"Boosts special item spawn rates"},
+  {lvl:40,type:"skin",skin:"gold",ic:"🌟",deT:"Highroller Emblem",enT:"Highroller Emblem",deD:"Zeige allen deinen Arcade-Fortschritt",enD:"Flex your arcade progression"},
+  {lvl:45,type:"perk",ic:"🛡️",deT:"Doppel-Schild",enT:"Double Shield",deD:"Zwei geschützte Fehlklicks pro Runde",enD:"Two protected misclicks per round"},
+  {lvl:50,type:"skin",skin:"godmode",ic:"🔥",deT:"Skin: Supernova Nova",enT:"Skin: Supernova Nova",deD:"Leuchtender Plasma-Style ab Lvl 50",enD:"Glowing plasma style at Lvl 50"},
+  {lvl:55,type:"perk",ic:"⚡",deT:"Master-Multiplikator",enT:"Master Multiplier",deD:"Permanent erhöhte Basis-Punktzahl",enD:"Permanently increased base score"},
+  {lvl:60,type:"skin",skin:"godmode",ic:"👑",deT:"Elite-Legenden Rang",enT:"Elite Legend Rank",deD:"Der Elite-Status für die Schulspitze",enD:"The elite status for the top spot"},
+  {lvl:65,type:"perk",ic:"🌈",deT:"Doppel-Joker Start",enT:"Double Joker Start",deD:"Zwei Farb-Joker direkt zu Beginn",enD:"Two color jokers right at start"},
+  {lvl:70,type:"skin",skin:"godmode",ic:"💫",deT:"Skin: Galactic Void",enT:"Skin: Galactic Void",deD:"Galaktischer Sternenstaub-Look",enD:"Galactic stardust visual theme"},
+  {lvl:75,type:"perk",ic:"⏱️",deT:"Ultimativer Zeit-Boost (+8s)",enT:"Ultimate Time Boost (+8s)",deD:"Massiver Zeitvorteil in jeder Runde",enD:"Massive time advantage every round"},
+  {lvl:80,type:"skin",skin:"godmode",ic:"💎",deT:"Götter-Status Badge",enT:"God Status Badge",deD:"Nur für absolute Chainpop-Experten",enD:"Only for absolute Chainpop experts"},
+  {lvl:85,type:"perk",ic:"🛡️",deT:"Unzerstörbar",enT:"Indestructible",deD:"Maximaler Schutz vor Strafsekunden",enD:"Maximum penalty protection"},
+  {lvl:90,type:"skin",skin:"godmode",ic:"⚡",deT:"Skin: Cyber God",enT:"Skin: Cyber God",deD:"Gleißendes Cyberpunk-Götterkleid",enD:"Blinding cyberpunk god attire"},
+  {lvl:95,type:"perk",ic:"🔥",deT:"Hyper-Score Booster",enT:"Hyper Score Booster",deD:"Verstärkt all deine Combo-Multiplikatoren",enD:"Amplifies all your combo multipliers"},
+  {lvl:100,type:"skin",skin:"godmode",ic:"🌌",deT:"Skin: ULTIMATE COSMIC GODMODE",enT:"Skin: ULTIMATE COSMIC GODMODE",deD:"Das absolute Monster-Finale! Pulsierender Sternenregen, unendlicher Glow & der unbestrittene Titel 'Chainpop-Gott'",enD:"The ultimate monster finale! Pulsing stardust, infinite glow & 'Chainpop God' title"}
+];
+
+const I18N={
+  de:{
+    pts:"Punkte",cb:"Combo",time:"Zeit",freeze:"EISZEIT ❄️",
+    dEasy:"🟢 Easy",dNorm:"🟡 Normal",dHard:"🔴 Hard",
+    lvlRanks:[[1,"Frischling 🌱"],[3,"Ketten-Profi ⚡"],[10,"Combo-Jäger 🔥"],[25,"Neon-Overlord 😈"],[50,"Arcade-Veteran 👾"],[100,"Chainpop-Gott 👑"]],
+    ranks:[[0,"Frischling 🌱"],[350,"Popper 🎯"],[800,"Kettenprofi ⚡"],[1400,"Combo-Meister 🔥"],[2200,"Chainpop-Legende 👑"]],
+    ach:[
+      {id:"p500",ic:"🍬",t:"Kaugummi-Profi",d:"500 Punkte in einer Runde"},
+      {id:"p1500",ic:"👑",t:"Pausenhof-Boss",d:"1.500 Punkte knacken"},
+      {id:"c5",ic:"🔥",t:"Kettenreaktor",d:"Maximal-Combo x5 erreichen"},
+      {id:"big8",ic:"🌈",t:"Farbrausch",d:"8+ Steine auf einen Schlag"},
+      {id:"lvl5",ic:"🚀",t:"Arcade-Sprinter",d:"Level 5 im Arcade-Modus erreichen"},
+      {id:"lvl100",ic:"🌌",t:"Kosmische Legende",d:"Erreiche das legendäre Level 100!"},
+      {id:"streak3",ic:"📅",t:"Dauerbrenner",d:"3 Tage am Stück gespielt"},
+      {id:"win",ic:"⚔️",t:"Duell-Sieger",d:"Ein Code- oder Handy-Duell gewonnen"}
+    ],
+    achToast:"🏆 Erfolg: ",
+    ftFreeze:"❄️ 5s EISZEIT!",ftJoker:"🌈 FARB-JOKER! +",ftUnstop:"🔥 UNSTOPPABLE!",
+    ftMkJoker:"🌈 JOKER!",ftMkIce:"❄️ EISZEIT!",ftMkBomb:"💥 BOMBE!",ftShuffle:"Neu gemischt!",
+    ftShield:"🛡️ SCHILD GEBLOCKT!",
+    pkTime:"+3s Zeit",pkJoker:"🌈 Start-Joker",pkShield:"🛡️ Schild aktiv",pkShieldUsed:"🛡️ Schild verbraucht",
+    penOn:" · Fehlklick = −{p}s",penOff:" · ohne Strafe",
+    arcadeHud:"LEVEL {l} · Ziel: {sc} / {g} Pkt",
+    lvlClearTitle:"🎉 Level {l} geschafft!",
+    lvlClearSub:"Stark! Jetzt wartet <b>Level {next}</b> mit einem neuen, knackigeren Brett.",
+    newUnlockHead:"🎁 NEUE BELOHNUNG FREIGESCHALTET!",
+    lvlSpecs:"⏱️ Zeit: <b>{t}s</b> · 🎯 Ziel: <b>{g} Pkt</b> · 🎨 Farben: <b>{c}</b> · ⚠️ Strafe: <b>−{p}s</b>",
+    lvlNextBtn:"Level {next} starten 🚀",
+    timeUp:"Zeit um! ⏱️",timeUpSub:"Starke <b>{sc} Punkte</b>! Willst du noch eine Chance?",
+    chillTimeUp:"Chill-Runde vorbei! 🌿",chillTimeUpSub:"Du hast <b>{sc} Punkte</b> gesammelt. Kostenlos weiterspielen?",
+    arcadeFail:"Level {l} verfehlt! 😅",arcadeFailSub:"Du hattest <b>{sc}</b> von <b>{g}</b> benötigten Punkten.",
+    reviveFree:"🌿 Kostenlos weiter (+15 s)<small>Chill-Modus Bonus</small>",
+    revivePaid:"💎 Wiederbeleben (+10 s)<small>Kostet {cost} Pop-Coins (Du hast {coins} 🪙)</small>",
+    revivePoor:"🔒 Wiederbeleben ({cost} 🪙)<small>Nicht genug Pop-Coins (Du hast {coins} 🪙)</small>",
+    endRound:"Runde beenden",
+    coinsEarned:"🪙 +{e} Pop-Coins ({mult}x Bonus · Gesamt: {tot} 🪙)",
+    nextGoalLbl:"Nächstes Ziel: Arcade Lvl {l}",
+    allUnlocked:"Level 100 erreicht! Ultimativer Götter-Status! 🌌",
+    dailyClaimed:"🎁 Tages-Bonus: +{c} Pop-Coins! (Tag {s} Streak 🔥)",
+    menuSub:"6er = 💥 Bombe · 7er = ❄️ Eiszeit · 8er+ = 🌈 Farb-Joker",
+    mArcade:"🚀 Arcade-Levels (Lvl {l})<small>Schaffe das Ziel & schalte Meilensteine bis Lvl 100 frei</small>",
+    mDaily:"📅 Tages-Challenge<small>Heute spielt deine ganze Klasse dasselbe Brett</small>",
+    mCode:"🔗 Code-Battle (1v1)<small>Fordere Freunde per Link & Code heraus</small>",
+    mDuel:"⚔️ Handy-Duell<small>2 Spieler auf 1 Handy · Best of 3</small>",
+    mSolo:"🎯 Solo-Rekordjagd<small>Klassisch auf Zeit · Keine Gnade ohne Coins</small>",
+    mChill:"🌿 Chill-Modus<small>60 Sekunden, keine Strafe & kostenloses Wiederbeleben</small>",
+    mRewards:"🎁 Prestige & Meilensteine ({u}/{tot})",
+    mTrophies:"🏆 Trophäen ({u}/{tot})",
+    mBest:"Rekorde: Solo {s} · Arcade Lvl {a} · Tag {d}",
+    rewTitle:"Prestige & Meilensteine 🎁",rewSub:"Steige im <b>Arcade-Modus</b> auf, um exklusive Belohnungen bis Level 100 freizuschalten!",
+    equip:"Ausrüsten",equipped:"Aktiv ✓",lockedLvl:"Ab Lvl {l}",
+    tTitle:"Trophäen 🏆",tSub:"Schalte alle Abzeichen durch fette Combos und Siege frei!",backMenu:"Zurück zum Menü",
+    rTitle:"Runde {r}",rTurn:"<b>Spieler {p}</b> ist dran!",
+    rBeat:"Zu schlagen: <b>{s} Punkte</b>",rNextNote:"Danach bekommt Spieler 2 exakt dasselbe Brett.",
+    rGo:"Los geht’s! 🚀",dPass:"Handy an <b>Spieler {p}</b> übergeben. Gleiches Brett, 45 Sekunden. Kannst du die {s} schlagen?",
+    dReady:"Spieler 2 ist bereit",dP1:"Spieler 1 punktet!",dP2:"Spieler 2 punktet!",dTie:"Unentschieden!",
+    dStand:"Stand: {a} : {b}",dDraw:"Unentschieden 🤝",dWin:"Spieler {w} gewinnt! 🏆",
+    dFinal:"Runden {w0} : {w1} · Gesamtpunkte {t0} : {t1}",dRematch:"Revanche 🔥",menu:"Menü",dNext:"Nächste Runde",
+    won:"Du hast gewonnen! 🎉",lost:"Knapp verloren – Revanche?",tie:"Unentschieden!",opp:" (Gegner: {o})",
+    newRec:"🏆 Neuer persönlicher Rekord!",curRec:"Dein Rekord: {r}",
+    arcadeRes:"Erreichtes Level: <b>Level {l}</b> (Rekord: Lvl {r})",
+    btnShare:"📣 Freund herausfordern (Link + Code)",btnAgainCode:"Revanche (gleiches Brett)",btnAgainLvl:"Level {l} nochmal versuchen 🔄",btnAgain:"Nochmal spielen",
+    shareTitle:"Chainpop Challenge",
+    shareTxt:"⚡ Chainpop{d} [{rk}]: Ich habe {sc} Punkte geknackt! Schaffst du mehr auf demselben Brett? Code: {c}",
+    shareDaily:" Tagesbrett",shareLink:"\n👉 Direkt spielen: ",
+    copied:"✅ Herausforderung kopiert! Jetzt in WhatsApp einfügen.",
+    lblSolo:"Solo",lblChill:"Chill",lblDaily:"Tagesbrett",lblCode:"Code-Battle",lblDuel:"Runde {r} · Spieler {p}",
+    cTitle:"Code-Battle 🔗",cSub:"Gleicher Code = exakt dasselbe Brett. Gib einen Code ein oder starte einen neuen.",
+    cLblCode:"Brett-Code",cLblPts:"Punkte des Gegners (optional)",cStart:"Start Battle ⚔️",back:"Zurück",
+    chTitle:"⚔️ Du wurdest herausgefordert!",chSub:"Dein Freund hat auf Brett <b>{c}</b> vorgelegt:",
+    chBest:"Bestwert",chDesc:"Du bekommst exakt dasselbe Brett. Bist du bereit?",chAccept:"Challenge annehmen 🔥",chMenu:"Zum Hauptmenü"
+  },
+  en:{
+    pts:"Score",cb:"Combo",time:"Time",freeze:"FREEZE ❄️",
+    dEasy:"🟢 Easy",dNorm:"🟡 Normal",dHard:"🔴 Hard",
+    lvlRanks:[[1,"Rookie 🌱"],[3,"Chain Pro ⚡"],[10,"Combo Hunter 🔥"],[25,"Neon Overlord 😈"],[50,"Arcade Veteran 👾"],[100,"Chainpop God 👑"]],
+    ranks:[[0,"Rookie 🌱"],[350,"Popper 🎯"],[800,"Chain Pro ⚡"],[1400,"Combo Master 🔥"],[2200,"Chainpop Legend 👑"]],
+    ach:[
+      {id:"p500",ic:"🍬",t:"Bubblegum Pro",d:"Score 500 points in one round"},
+      {id:"p1500",ic:"👑",t:"Schoolyard Boss",d:"Beat 1,500 points"},
+      {id:"c5",ic:"🔥",t:"Chain Reactor",d:"Reach max x5 combo"},
+      {id:"big8",ic:"🌈",t:"Color Rush",d:"Pop 8+ tiles at once"},
+      {id:"lvl5",ic:"🚀",t:"Arcade Sprinter",d:"Reach Level 5 in Arcade mode"},
+      {id:"lvl100",ic:"🌌",t:"Cosmic Legend",d:"Reach legendary Level 100!"},
+      {id:"streak3",ic:"📅",t:"On Fire",d:"Play 3 days in a row"},
+      {id:"win",ic:"⚔️",t:"Duel Champion",d:"Win a Code or Pass & Play duel"}
+    ],
+    achToast:"🏆 Unlocked: ",
+    ftFreeze:"❄️ 5s FREEZE!",ftJoker:"🌈 COLOR JOKER! +",ftUnstop:"🔥 UNSTOPPABLE!",
+    ftMkJoker:"🌈 JOKER!",ftMkIce:"❄️ FREEZE!",ftMkBomb:"💥 BOMB!",ftShuffle:"Reshuffled!",
+    ftShield:"🛡️ SHIELD BLOCKED!",
+    pkTime:"+3s Time",pkJoker:"🌈 Start Joker",pkShield:"🛡️ Shield Ready",pkShieldUsed:"🛡️ Shield Used",
+    penOn:" · Misclick = −{p}s",penOff:" · no penalty",
+    arcadeHud:"LEVEL {l} · Goal: {sc} / {g} pts",
+    lvlClearTitle:"🎉 Level {l} Cleared!",
+    lvlClearSub:"Awesome! Up next: <b>Level {next}</b> with a brand-new, tougher board.",
+    newUnlockHead:"🎁 NEW REWARD UNLOCKED!",
+    lvlSpecs:"⏱️ Time: <b>{t}s</b> · 🎯 Goal: <b>{g} pts</b> · 🎨 Colors: <b>{c}</b> · ⚠️ Penalty: <b>−{p}s</b>",
+    lvlNextBtn:"Start Level {next} 🚀",
+    timeUp:"Time's up! ⏱️",timeUpSub:"Awesome <b>{sc} points</b>! Want another shot?",
+    chillTimeUp:"Chill round over! 🌿",chillTimeUpSub:"You scored <b>{sc} points</b>. Keep going for free?",
+    arcadeFail:"Missed Level {l}! 😅",arcadeFailSub:"You reached <b>{sc}</b> of <b>{g}</b> target points.",
+    reviveFree:"🌿 Free Continue (+15 s)<small>Chill Mode perk</small>",
+    revivePaid:"💎 Revive (+10 s)<small>Costs {cost} Pop-Coins (You have {coins} 🪙)</small>",
+    revivePoor:"🔒 Revive ({cost} 🪙)<small>Not enough Pop-Coins (You have {coins} 🪙)</small>",
+    endRound:"Finish round",
+    coinsEarned:"🪙 +{e} Pop-Coins ({mult}x rate · Total: {tot} 🪙)",
+    nextGoalLbl:"Next Goal: Arcade Lvl {l}",
+    allUnlocked:"Reached Level 100! Ultimate God Status! 🌌",
+    dailyClaimed:"🎁 Daily Bonus: +{c} Pop-Coins! (Day {s} Streak 🔥)",
+    menuSub:"6+ = 💥 Bomb · 7 = ❄️ Freeze · 8+ = 🌈 Color Joker",
+    mArcade:"🚀 Arcade Levels (Lvl {l})<small>Hit goals to unlock rewards up to Lvl 100</small>",
+    mDaily:"📅 Daily Challenge<small>Everyone plays the exact same board today</small>",
+    mCode:"🔗 Code Battle (1v1)<small>Challenge friends via link & code</small>",
+    mDuel:"⚔️ Pass & Play Duel<small>2 players on 1 phone · Best of 3</small>",
+    mSolo:"🎯 Solo Highscore<small>Classic timed run · Save coins to revive</small>",
+    mChill:"🌿 Chill Mode<small>60 seconds, no penalty & free revive</small>",
+    mRewards:"🎁 Prestige & Milestones ({u}/{tot})",
+    mTrophies:"🏆 Trophies ({u}/{tot})",
+    mBest:"Best: Solo {s} · Arcade Lvl {a} · Daily {d}",
+    rewTitle:"Prestige & Milestones 🎁",rewSub:"Level up in <b>Arcade Mode</b> to unlock exclusive rewards up to Level 100!",
+    equip:"Equip",equipped:"Active ✓",lockedLvl:"Lvl {l}",
+    tTitle:"Trophies 🏆",tSub:"Unlock all badges with huge combos and wins!",backMenu:"Back to Menu",
+    rTitle:"Round {r}",rTurn:"<b>Player {p}</b> is up!",
+    rBeat:"Score to beat: <b>{s} pts</b>",rNextNote:"Player 2 will get the exact same board next.",
+    rGo:"Let's go! 🚀",dPass:"Pass the phone to <b>Player {p}</b>. Same board, 45 seconds. Can you beat {s}?",
+    dReady:"Player 2 is ready",dP1:"Player 1 scores!",dP2:"Player 2 scores!",dTie:"It's a tie!",
+    dStand:"Score: {a} : {b}",dDraw:"Draw 🤝",dWin:"Player {w} wins! 🏆",
+    dFinal:"Rounds {w0} : {w1} · Total pts {t0} : {t1}",dRematch:"Rematch 🔥",menu:"Menu",dNext:"Next Round",
+    won:"You won! 🎉",lost:"So close – Rematch?",tie:"It's a tie!",opp:" (Opponent: {o})",
+    newRec:"🏆 New personal record!",curRec:"Your record: {r}",
+    arcadeRes:"Reached: <b>Level {l}</b> (Best: Lvl {r})",
+    btnShare:"📣 Challenge a Friend (Link + Code)",btnAgainCode:"Rematch (same board)",btnAgainLvl:"Retry Level {l} 🔄",btnAgain:"Play Again",
+    shareTitle:"Chainpop Challenge",
+    shareTxt:"⚡ Chainpop{d} [{rk}]: I scored {sc} points! Can you beat me on the same board? Code: {c}",
+    shareDaily:" Daily Board",shareLink:"\n👉 Play now: ",
+    copied:"✅ Challenge copied! Paste it in WhatsApp or chat.",
+    lblSolo:"Solo",lblChill:"Chill",lblDaily:"Daily Board",lblCode:"Code Battle",lblDuel:"Round {r} · Player {p}",
+    cTitle:"Code Battle 🔗",cSub:"Same code = exact same board. Enter a friend's code or generate a new one.",
+    cLblCode:"Board Code",cLblPts:"Opponent's score (optional)",cStart:"Start Battle ⚔️",back:"Back",
+    chTitle:"⚔️ You've Been Challenged!",chSub:"Your friend set a score on board <b>{c}</b>:",
+    chBest:"Highscore",chDesc:"You'll get the exact same board. Ready?",chAccept:"Accept Challenge 🔥",chMenu:"Main Menu"
+  }
+};
+
+let cfg={code:"AAAA"},g,rs,sc=0,totalArcadeSc=0,t=45,freeze=0,combo=1,last=0,run=false,timer,nw=new Set(),used=0,duel,mute=false,ac,lsec=0,B={},ps=[],raf=0,screen="menu";
+let lvl=1,lvlGoal=250,nextLvlCfg=null,shieldReady=false,justUnlocked=null;
+
+try{let raw=localStorage.getItem("cp1")||localStorage.getItem("kp3");if(!raw&&window.name&&window.name.indexOf("CP1_SAVE:")===0){raw=window.name.slice(9)}B=JSON.parse(raw||"{}")}catch(e){}
+if(!B||typeof B!=="object")B={};
+if(!B.ach||typeof B.ach!=="object")B.ach={};
+if(typeof B.coins!=="number"||isNaN(B.coins))B.coins=150;
+if(typeof B.arcadeLvl!=="number"||isNaN(B.arcadeLvl)||B.arcadeLvl<1)B.arcadeLvl=1;
+if(!B.skin)B.skin="default";
+
+let diff=DIFFS[B.diff]?B.diff:"normal";
+let lang=(B.lang&&I18N[B.lang])?B.lang:(navigator.language&&navigator.language.indexOf("de")===0?"de":"en");
+const L=()=>I18N[lang]||I18N.de;
+
+function tr(k,v){
+  let s=L()[k]||I18N.de[k]||k;
+  if(v){
+    for(const a in v){
+      if(Object.prototype.hasOwnProperty.call(v,a)){
+        s=s.split("{"+a+"}").join(String(v[a]));
+      }
+    }
+  }
+  return s;
+}
+
+const sv=()=>{B.lang=lang;B.diff=diff;try{const j=JSON.stringify(B);localStorage.setItem("cp1",j);try{window.name="CP1_SAVE:"+j}catch(e2){}}catch(e){}};
+const rank=s=>(L().ranks.filter(r=>s>=r[0]).pop()||L().ranks[0])[1];
+const playerTitle=()=>(L().lvlRanks.filter(r=>(B.arcadeLvl||1)>=r[0]).pop()||L().lvlRanks[0])[1];
+const rc=()=>{let s="";for(let i=0;i<4;i++)s+=AL[Math.random()*AL.length|0];return s};
+
+function applySkin(){
+  document.body.classList.remove("sk-cyber","sk-void","sk-retro","sk-gold","sk-godmode");
+  if(B.skin&&B.skin!=="default")document.body.classList.add("sk-"+B.skin);
+}
+
+function showToast(msg){
+  const el=document.createElement("div");el.className="toast";
+  el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>{if(el.parentNode)el.parentNode.removeChild(el)},3100);
+}
+
+function checkDailyStreak(){
+  const today=new Date().toISOString().slice(0,10);
+  if(B.lastDay===today)return;
+  const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  B.streak=(B.lastDay===yest)?(B.streak||1)+1:1;
+  B.lastDay=today;
+  const bonus=Math.min(250,40+B.streak*20);
+  B.coins=(B.coins||0)+bonus;
+  if(B.streak>=3)unlock("streak3");
+  sv();
+  setTimeout(()=>showToast(tr("dailyClaimed",{c:bonus,s:B.streak})),500);
+}
+
+function getArcadeSpec(l){
+  const base=DIFFS[diff]||DIFFS.normal;
+  const cols=(l<=2 && diff==="easy")?4:5;
+  const time=Math.max(20, (base.time-7) - Math.floor((l-1)*1.2));
+  const pen=Math.min(5, base.pen + Math.floor((l-1)/2));
+  const goal=Math.round((280 + (l-1)*145) * (diff==="hard"?1.2:diff==="easy"?0.85:1));
+  return {cols,time,pen,goal};
+}
+
+function applyLang(){
+  document.documentElement.lang=lang;
+  $("lbl_pts").textContent=tr("pts");
+  $("lbl_cb").textContent=tr("cb");
+  if(run){
+    updateHudText();
+    renderPerks();
+  }else if(!$("ov").hidden){
+    if(screen==="menu")menu();
+    else if(screen==="trophies")trophies();
+    else if(screen==="rewards")rewards();
+    else if(screen==="codeS")AC.codeS();
+    else if(screen==="fin")fin();
+    else if(screen==="lvlclear")showLevelClear();
+    else if(screen==="challenge")checkUrl();
+  }
+  render();
+}
+
+function toggleLang(){lang=lang==="de"?"en":"de";sv();applyLang()}
+function setDiff(d){diff=d;sv();menu()}
+
+function unlock(id){
+  if(B.ach[id])return;
+  B.ach[id]=1;sv();
+  const a=L().ach.find(x=>x.id===id);if(!a)return;
+  showToast(tr("achToast")+a.ic+" "+a.t);
+  [659,880,1175].forEach((f,i)=>tn(f,.15,"triangle",.16,0,i*.08));
+}
+
+function hash(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return h>>>0}
+function mb(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function au(){if(!ac){try{ac=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(ac&&ac.state==="suspended")ac.resume()}
+function tn(f,d,ty="sine",v=.15,sl=0,dl=0){if(mute||!ac)return;const o=ac.createOscillator(),k=ac.createGain(),s=ac.currentTime+dl;o.type=ty;o.frequency.setValueAtTime(f,s);if(sl)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*sl),s+d);k.gain.setValueAtTime(v,s);k.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(k);k.connect(ac.destination);o.start(s);o.stop(s+d+.02)}
+const PE=[0,2,4,7,9,12];
+function sPop(n,cb){const f=392*Math.pow(2,PE[Math.min(cb-1,5)]/12);tn(f,.14,"triangle",.2);if(n>=5)tn(f*1.5,.18,"sine",.15,0,.05);if(n>=7)tn(f*2,.25,"sine",.15,0,.1)}
+const fanfare=()=>[523,659,784,1047,1319].forEach((f,i)=>tn(f,.2,"triangle",.18,0,i*.11));
+const lose=()=>[392,330,262].forEach((f,i)=>tn(f,.25,"triangle",.15,0,i*.17));
+const vib=m=>{try{navigator.vibrate&&navigator.vibrate(m)}catch(e){}};
+
+const grid=$("grid"),pc=$("fx"),px=pc.getContext("2d");
+function fit(){const r=grid.getBoundingClientRect(),d=devicePixelRatio||1;pc.width=r.width*d;pc.height=r.height*d;pc.style.width=r.width+"px";pc.style.height=r.height+"px";px.setTransform(d,0,0,d,0,0)}
+addEventListener("resize",fit);
+const cx=(c)=>8+(c+.5)*(grid.clientWidth-16)/N;
+
+function ringFx(r,c,col,maxR=68){ps.push({ring:1,x:cx(c),y:cx(r),r:8,maxR,l:1,c:col})}
+function confetti(){
+  const cols=["#ff2a85","#00e5ff","#9eff00","#ff9e00","#9d4edd"];
+  for(let i=0;i<38;i++){
+    ps.push({x:grid.clientWidth/2,y:grid.clientHeight/2,vx:(Math.random()-.5)*11.5,vy:(Math.random()-.7)*10.5,l:1.4,c:cols[i%cols.length],szP:6});
+  }
+}
+function fx(r,c,v){
+  const col=v===BM?"#ff9e00":v===JK?"#ff2a85":v===IC?"#7ee8fa":getComputedStyle(document.documentElement).getPropertyValue("--c"+v);
+  for(let i=0;i<7;i++)ps.push({x:cx(c),y:cx(r),vx:(Math.random()-.5)*6.5,vy:(Math.random()-.85)*5.5,l:1,c:col});
+}
+function ft(s,r,c,col,sz=19){ps.push({t:s,x:cx(c),y:cx(r),vx:0,vy:-1.15,l:1.35,c:col,sz})}
+function kick(){if(!raf)raf=requestAnimationFrame(loop)}
+function loop(){
+  px.clearRect(0,0,999,999);ps=ps.filter(p=>p.l>0);
+  for(const p of ps){
+    p.l-=.024;
+    px.globalAlpha=Math.max(0,Math.min(1,p.l));
+    if(p.ring){
+      p.r+=(p.maxR-p.r)*.18;
+      px.beginPath();px.arc(p.x,p.y,p.r,0,Math.PI*2);
+      px.lineWidth=4*p.l;px.strokeStyle=p.c;px.stroke();
+    }else if(p.t){
+      p.x+=p.vx;p.y+=p.vy;
+      px.font="900 "+(p.sz||19)+"px Trebuchet MS,sans-serif";px.textAlign="center";
+      px.lineWidth=4;px.strokeStyle="rgba(13,8,28,.85)";px.fillStyle=p.c;
+      px.strokeText(p.t,p.x,p.y);px.fillText(p.t,p.x,p.y);
+    }else{
+      p.x+=p.vx;p.y+=p.vy;p.vy+=.22;
+      const s=p.szP||7;
+      px.fillStyle=p.c;px.fillRect(p.x-s/2,p.y-s/2,s,s);
+    }
+  }
+  px.globalAlpha=1;raf=ps.length?requestAnimationFrame(loop):0;
+}
+function shake(){grid.classList.remove("sh");void grid.offsetWidth;grid.classList.add("sh")}
+
+function getCols(){return cfg.cols||5}
+
+function fresh(){
+  const C=getCols();
+  rs=[];for(let c=0;c<N;c++)rs.push(mb(hash(cfg.code+c)));
+  g=[];for(let r=0;r<N;r++)g.push([]);
+  for(let c=0;c<N;c++)for(let r=N-1;r>=0;r--)g[r][c]=rs[c]()*C|0;
+
+  if((B.arcadeLvl||1)>=4 && cfg.mode!=="daily" && cfg.mode!=="duel" && cfg.mode!=="code"){
+    const jr=(rs[0]()*N)|0, jc=(rs[1]()*N)|0;
+    g[jr][jc]=JK;
