@@ -619,3 +619,525 @@ function fresh(){
   if((B.arcadeLvl||1)>=4 && cfg.mode!=="daily" && cfg.mode!=="duel" && cfg.mode!=="code"){
     const jr=(rs[0]()*N)|0, jc=(rs[1]()*N)|0;
     g[jr][jc]=JK;
+  }
+}
+
+for(let i=0;i<N*N;i++){
+  const b=document.createElement("button");
+  b.className="cell";
+  b.type="button";
+  b.onclick=()=>tap(i);
+  grid.appendChild(b);
+}
+
+function renderPerks(){
+  const st=$("perk_strip");
+  const al=B.arcadeLvl||1;
+  const fairMode=(cfg.mode==="daily"||cfg.mode==="duel"||cfg.mode==="code");
+  if(fairMode||al<2){st.innerHTML="";return}
+  let h="";
+  if(al>=2)h+='<span class="pk-tag">⏱️ '+tr("pkTime")+'</span>';
+  if(al>=4)h+='<span class="pk-tag">'+tr("pkJoker")+'</span>';
+  if(al>=6)h+='<span class="pk-tag shield'+(shieldReady?'':' used')+'">'+(shieldReady?tr("pkShield"):tr("pkShieldUsed"))+'</span>';
+  st.innerHTML=h;
+}
+
+function updateHudText(){
+  const badge=$("lvl_badge");
+  if(cfg.mode==="arcade"){
+    badge.hidden=false;
+    badge.textContent="LVL "+lvl;
+    $("info").textContent=tr("arcadeHud",{l:lvl,sc:sc,g:lvlGoal});
+  }else{
+    badge.hidden=true;
+    $("info").textContent=cfg.label+" · Code: "+cfg.code+(cfg.pen?tr("penOn",{p:cfg.pen}):tr("penOff"));
+  }
+}
+
+function render(){
+  const cs=grid.children;
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    const idx=r*N+c,e=cs[idx],v=g[r][c];
+    let cls="cell"+(nw.has(idx)?" n":"");
+    if(v===BM){e.style.background="";e.textContent="💥";cls+=" sp-bomb"}
+    else if(v===JK){e.style.background="";e.textContent="🌈";cls+=" sp-joker"}
+    else if(v===IC){e.style.background="";e.textContent="❄️";cls+=" sp-ice"}
+    else{
+      e.style.background="radial-gradient(circle at 30% 25%,rgba(255,255,255,.45),transparent 55%),var(--c"+v+")";
+      e.textContent=SH[v];
+    }
+    e.className=cls;
+  }
+  nw=new Set();
+  $("sc").textContent=sc;
+  const cb=$("cb");cb.textContent="x"+combo;cb.style.color="var(--c"+((combo-1)%5)+")";
+  if(combo>=4&&run)grid.classList.add("combo-glow");else grid.classList.remove("combo-glow");
+
+  const tm=$("tm"),tl=$("tlbl"),fl=$("fill"),lw=$("lvl_wrap");
+  if(cfg.mode==="arcade"){
+    lw.hidden=false;
+    const pct=Math.min(100,Math.max(0,(sc/lvlGoal)*100));
+    $("lvl-fill").style.width=pct+"%";
+    if(run)updateHudText();
+  }else{
+    lw.hidden=true;
+  }
+
+  if(freeze>0){
+    document.body.classList.add("frozen");
+    tl.textContent=tr("freeze");tm.textContent=freeze.toFixed(1)+"s";tm.className="frz";
+    fl.className="frz-bar";fl.style.width=(freeze/5*100)+"%";
+  }else{
+    document.body.classList.remove("frozen");
+    tl.textContent=tr("time");tm.textContent=Math.max(0,Math.ceil(t));tm.className=t<=5&&run?"low":"";
+    fl.className="";fl.style.width=Math.min(100,t/(cfg.maxTime||45)*100)+"%";
+  }
+}
+
+function group(r,c){
+  const v=g[r][c],seen=new Set([r*N+c]),q=[[r,c]];
+  for(let i=0;i<q.length;i++){
+    const[y,x]=q[i];
+    for(const[dy,dx]of[[1,0],[-1,0],[0,1],[0,-1]]){
+      const a=y+dy,b=x+dx;
+      if(a>=0&&b>=0&&a<N&&b<N&&g[a][b]===v&&!seen.has(a*N+b)){seen.add(a*N+b);q.push([a,b])}
+    }
+  }
+  return q;
+}
+function hasMove(){for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(g[r][c]>=BM||group(r,c).length>1)return true;return false}
+
+function refill(q){
+  const C=getCols();
+  const cols=new Set(q.map(p=>p[1]));
+  for(const c of cols){
+    const keep=[];
+    for(let r=N-1;r>=0;r--)if(g[r][c]!==-1)keep.push(g[r][c]);
+    for(let r=N-1,i=0;r>=0;r--,i++){
+      if(i<keep.length)g[r][c]=keep[i];
+      else{g[r][c]=rs[c]()*C|0;nw.add(r*N+c)}
+    }
+  }
+}
+
+function checkArcadeLevelComplete(){
+  if(cfg.mode!=="arcade"||sc<lvlGoal)return false;
+  run=false;
+  freeze=0;
+  document.body.classList.remove("frozen");
+  grid.classList.remove("combo-glow");
+  clearInterval(timer);
+
+  totalArcadeSc+=sc;
+  const reached=lvl+1;
+  justUnlocked=null;
+  if(reached>(B.arcadeLvl||1)){
+    B.arcadeLvl=reached;
+    const rw=REWARDS.find(x=>x.lvl===reached);
+    if(rw){
+      justUnlocked=rw;
+      if(rw.type==="skin"){B.skin=rw.skin;applySkin()}
+    }
+    sv();
+  }
+  if(reached>=5)unlock("lvl5");
+  if(reached>=100)unlock("lvl100");
+
+  fanfare();
+  confetti();
+  ringFx(3,3,"#9eff00",150);
+  kick();
+
+  nextLvlCfg=getArcadeSpec(lvl+1);
+  screen="lvlclear";
+  setTimeout(()=>showLevelClear(),420);
+  return true;
+}
+
+function showLevelClear(){
+  const sp=nextLvlCfg||getArcadeSpec(lvl+1);
+  let unlHtml="";
+  if(justUnlocked){
+    const t=lang==="de"?justUnlocked.deT:justUnlocked.enT;
+    const d=lang==="de"?justUnlocked.deD:justUnlocked.enD;
+    unlHtml='<div class="unlock-box"><small style="color:var(--c2);font-weight:900;letter-spacing:.6px">'+tr("newUnlockHead")+'</small><div style="font-size:1.15rem;font-weight:900;margin:4px 0">'+justUnlocked.ic+' '+t+'</div><p style="font-size:.8rem;color:#fff">'+d+'</p></div>';
+  }
+  ov(
+    '<h1>'+tr("lvlClearTitle",{l:lvl})+'</h1>'+
+    unlHtml+
+    '<p>'+tr("lvlClearSub",{next:lvl+1})+'</p>'+
+    '<div class="stat-box">'+tr("lvlSpecs",{t:sp.time,g:sp.goal,c:sp.cols,p:sp.pen})+'</div>'+
+    bt("nextArcade",tr("lvlNextBtn",{next:lvl+1}),"card grn")+
+    bt("end",tr("endRound"),"g")
+  );
+}
+
+function tap(i){
+  if(!run)return;au();
+  const r=i/N|0,c=i%N,v=g[r][c],C=getCols();
+  let q=[];
+
+  if(v===BM){
+    for(let y=r-1;y<=r+1;y++)for(let x=c-1;x<=c+1;x++)if(y>=0&&x>=0&&y<N&&x<N)q.push([y,x]);
+    tn(200,.38,"square",.16,.2);tn(85,.45,"sawtooth",.14,.4);shake();vib(35);
+    ringFx(r,c,"#ff9e00",95);
+  }else if(v===JK){
+    const cnt=[0,0,0,0,0];
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(g[y][x]<5)cnt[g[y][x]]++;
+    const target=cnt.indexOf(Math.max(...cnt));
+    q.push([r,c]);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(g[y][x]===target)q.push([y,x]);
+    [523,659,784,1047].forEach((f,idx)=>tn(f,.18,"sine",.15,0,idx*.04));
+    shake();vib([20,30,40]);
+    ringFx(r,c,"#ff2a85",130);
+  }else if(v===IC){
+    q.push([r,c]);
+    freeze=5.0;
+    [880,1175,1397].forEach((f,idx)=>tn(f,.22,"triangle",.14,0,idx*.05));
+    vib(25);
+    ringFx(r,c,"#00e5ff",100);
+  }else{
+    q=group(r,c);
+    if(q.length<2){miss(r,c);return}
+    if(q.length>=5)ringFx(r,c,getComputedStyle(document.documentElement).getPropertyValue("--c"+v),70);
+  }
+
+  const now=Date.now();
+  if(now-last>1650)combo=1;
+  const n=q.length,pts=n*n*combo,bonus=v<BM?Math.max(0,n-4):0;
+  sc+=pts;t+=bonus;
+  if(v<BM)sPop(n,combo);
+
+  const scEl=$("sc");scEl.classList.add("pop-num");setTimeout(()=>scEl.classList.remove("pop-num"),130);
+
+  for(const[y,x]of q){fx(y,x,g[y][x]);g[y][x]=-1}
+
+  if(v===IC)ft(tr("ftFreeze"),r,c,"#00e5ff",21);
+  else if(v===JK)ft(tr("ftJoker")+pts,r,c,"#ff2a85",21);
+  else ft("+"+pts+(bonus?" ⏱+"+bonus:""),r,c,"#fff");
+
+  if(combo===5&&now-last<=1650){ft(tr("ftUnstop"),Math.max(1,r-1),c,"#ff9e00",20);unlock("c5")}
+  if(sc>=500)unlock("p500");
+  if(sc>=1500)unlock("p1500");
+  if(n>=8)unlock("big8");
+
+  combo=Math.min(5,combo+1);last=now;
+  refill(q);
+
+  if(v<BM){
+    if(n>=8){g[r][c]=JK;nw.add(i);ft(tr("ftMkJoker"),Math.max(0,r-1),c,"#ff2a85",21)}
+    else if(n===7){g[r][c]=IC;nw.add(i);ft(tr("ftMkIce"),Math.max(0,r-1),c,"#00e5ff",21)}
+    else if(n===6){g[r][c]=BM;nw.add(i);ft(tr("ftMkBomb"),Math.max(0,r-1),c,"#ff9e00",21)}
+  }
+
+  if(!hasMove()){
+    for(let c2=0;c2<N;c2++)for(let r2=0;r2<N;r2++){g[r2][c2]=rs[c2]()*C|0;nw.add(r2*N+c2)}
+    ft(tr("ftShuffle"),3,3,"#00e5ff");
+  }
+
+  render();kick();
+  checkArcadeLevelComplete();
+}
+
+function miss(r,c){
+  if(cfg.pen){
+    if(shieldReady){
+      shieldReady=false;
+      renderPerks();
+      tn(660,.16,"sine",.14);
+      ringFx(r,c,"#9eff00",55);
+      ft(tr("ftShield"),r,c,"#9eff00",17);
+      kick();
+      return;
+    }
+    t-=cfg.pen;combo=1;tn(150,.28,"sawtooth",.13,.5);vib(45);shake();ft("−"+cfg.pen+" s",r,c,"#ff2a85");kick();
+  }else tn(260,.08,"sine",.06);
+  render();
+}
+
+function go(){
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    if(freeze>0){
+      freeze=Math.max(0,freeze-.1);
+      render();return;
+    }
+    t-=.1;
+    if(Date.now()-last>1650&&combo>1)combo=1;
+    const s=Math.ceil(t);
+    if(t<=5&&s>0&&s!==lsec){lsec=s;tn(880,.06,"square",.07)}
+    if(t<=0){t=0;render();over();return}
+    render();
+  },100);
+}
+
+function start(c){
+  const df=DIFFS[diff]||DIFFS.normal;
+  const fairMode=(c.mode==="daily"||c.mode==="duel"||c.mode==="code");
+  const timeBonus=(!fairMode && (B.arcadeLvl||1)>=2)?3:0;
+  const baseT=(c.time||df.time)+timeBonus;
+
+  cfg={
+    cols:c.cols||df.cols,
+    pen:c.pen!==undefined?c.pen:df.pen,
+    time:baseT,
+    maxTime:baseT,
+    coinMult:c.coinMult!==undefined?c.coinMult:df.coinMult,
+    ...c
+  };
+  au();sc=0;t=cfg.time;freeze=0;combo=1;last=0;used=0;lsec=0;run=true;
+  shieldReady=(!fairMode && (B.arcadeLvl||1)>=6 && cfg.pen>0);
+
+  if(cfg.mode==="arcade"&&!c.keepLvl){
+    lvl=c.startLvl||(B.arcadeLvl||1);totalArcadeSc=0;
+    const sp=getArcadeSpec(lvl);
+    cfg.cols=sp.cols;cfg.time=sp.time+timeBonus;cfg.maxTime=sp.time+timeBonus;cfg.pen=sp.pen;
+    t=cfg.time;lvlGoal=sp.goal;
+  }
+  fresh();ov(null);
+  renderPerks();
+  updateHudText();
+  fit();render();go();
+}
+
+function startNextArcadeLevel(){
+  lvl++;
+  const sp=getArcadeSpec(lvl);
+  const timeBonus=(B.arcadeLvl||1)>=2?3:0;
+  start({
+    mode:"arcade",
+    code:rc(),
+    keepLvl:true,
+    cols:sp.cols,
+    time:sp.time+timeBonus,
+    pen:sp.pen,
+    coinMult:(DIFFS[diff]||DIFFS.normal).coinMult
+  });
+  lvlGoal=sp.goal;
+  updateHudText();
+  render();
+}
+
+function over(){
+  run=false;freeze=0;document.body.classList.remove("frozen");grid.classList.remove("combo-glow");clearInterval(timer);tn(300,.3,"triangle",.15,.5);render();
+
+  if(cfg.mode==="chill"&&!used){
+    screen="over";
+    ov('<h1>'+tr("chillTimeUp")+'</h1><p>'+tr("chillTimeUpSub",{sc})+'</p>'+bt("reviveFree",tr("reviveFree"),"card ice")+bt("end",tr("endRound"),"g"));
+    return;
+  }
+
+  if((cfg.mode==="solo"||cfg.mode==="arcade")&&!used){
+    screen="over";
+    const canAfford=(B.coins||0)>=REVIVE_COST;
+    const title=cfg.mode==="arcade"?tr("arcadeFail",{l:lvl}):tr("timeUp");
+    const sub=cfg.mode==="arcade"?tr("arcadeFailSub",{sc,g:lvlGoal}):tr("timeUpSub",{sc});
+    const revBtn=canAfford
+      ? bt("reviveCoins",tr("revivePaid",{cost:REVIVE_COST,coins:B.coins||0}),"card hot")
+      : '<button class="b g" disabled>'+tr("revivePoor",{cost:REVIVE_COST,coins:B.coins||0})+'</button>';
+    ov('<h1>'+title+'</h1><p>'+sub+'</p>'+revBtn+bt("end",tr("endRound"),"g"));
+    return;
+  }
+
+  fin();
+}
+
+function ov(h){const o=$("ov");if(h==null){o.hidden=true;return}o.hidden=false;o.innerHTML='<div class="in">'+h+'</div>';o.scrollTop=0}
+const bt=(a,l,c="")=>'<button class="b '+c+'" type="button" data-a="'+a+'">'+l+'</button>';
+
+$("ov").onclick=e=>{
+  const btn=e.target.closest("[data-a]");
+  if(btn){au();AC[btn.dataset.a]();return}
+  const sk=e.target.closest("[data-skin]");
+  if(sk){au();B.skin=sk.dataset.skin;sv();applySkin();rewards()}
+};
+$("mu").onclick=()=>{mute=!mute;$("mu").textContent=mute?"🔇":"🔊"};
+$("q").onclick=()=>{run=false;freeze=0;document.body.classList.remove("frozen");grid.classList.remove("combo-glow");$("lvl_badge").hidden=true;$("perk_strip").innerHTML="";clearInterval(timer);menu()};
+
+function menu(){
+  screen="menu";
+  $("lvl_badge").hidden=true;
+  $("perk_strip").innerHTML="";
+  const uCount=Object.keys(B.ach).length;
+  const al=B.arcadeLvl||1;
+  const rewUnlocked=REWARDS.filter(r=>al>=r.lvl).length;
+  const nextRew=REWARDS.find(r=>al<r.lvl);
+
+  const topBar='<div style="display:flex;justify-content:space-between;align-items:center;gap:4px">'+
+    '<span class="coin-pill">🪙 '+(B.coins||0)+'</span>'+
+    '<span class="rank-pill">'+playerTitle()+'</span>'+
+    '<button class="ic" type="button" style="margin:0" data-a="lang">'+(lang==="de"?"🇩🇪 DE":"🇬🇧 EN")+'</button>'+
+  '</div>';
+
+  let goalHtml="";
+  if(nextRew){
+    const rTitle=lang==="de"?nextRew.deT:nextRew.enT;
+    goalHtml='<div class="goal-banner" data-a="rewards"><div><small>'+tr("nextGoalLbl",{l:nextRew.lvl})+'</small><b>'+nextRew.ic+' '+rTitle+'</b></div><span class="goal-badge">LVL '+al+' / '+nextRew.lvl+'</span></div>';
+  }else{
+    goalHtml='<div class="goal-banner"><div><b>'+tr("allUnlocked")+'</b></div><span class="goal-badge">MAX</span></div>';
+  }
+
+  const diffBar='<div class="diff-row">'+
+    '<button class="diff-btn'+(diff==="easy"?" act":"")+'" type="button" data-a="dEasy"><span>'+tr("dEasy")+'</span><small>0.6x 🪙</small></button>'+
+    '<button class="diff-btn'+(diff==="normal"?" act":"")+'" type="button" data-a="dNorm"><span>'+tr("dNorm")+'</span><small>1.0x 🪙</small></button>'+
+    '<button class="diff-btn'+(diff==="hard"?" act":"")+'" type="button" data-a="dHard"><span>'+tr("dHard")+'</span><small>1.75x 🪙</small></button>'+
+  '</div>';
+
+  ov(topBar+'<div class="logo-hero">CHAINPOP ⚡</div>'+
+  goalHtml+
+  diffBar+
+  bt("arcade",tr("mArcade",{l:al}),"card grn")+
+  bt("daily",tr("mDaily"),"card hot")+
+  bt("codeS",tr("mCode"),"card")+
+  bt("duel",tr("mDuel"),"card ice")+
+  bt("solo",tr("mSolo"),"card")+
+  bt("chill",tr("mChill"),"card")+
+  '<div class="row">'+
+    '<button class="b g" type="button" style="flex:1;padding:10px 8px;font-size:.82rem" data-a="rewards">'+tr("mRewards",{u:rewUnlocked,tot:REWARDS.length})+'</button>'+
+    '<button class="b g" type="button" style="flex:1;padding:10px 8px;font-size:.82rem" data-a="trophies">'+tr("mTrophies",{u:uCount,tot:L().ach.length})+'</button>'+
+  '</div>'+
+  '<p style="font-size:.76rem">'+tr("mBest",{s:B.solo||0,a:al,d:B.daily||0})+'</p>');
+}
+
+function rewards(){
+  screen="rewards";
+  const al=B.arcadeLvl||1;
+  let list='<div class="roadmap">';
+  for(const r of REWARDS){
+    const unl=al>=r.lvl;
+    const t=lang==="de"?r.deT:r.enT;
+    const d=lang==="de"?r.deD:r.enD;
+    let right='<span class="rm-lvl">'+(unl?'✓ LVL '+r.lvl:tr("lockedLvl",{l:r.lvl}))+'</span>';
+    if(unl && r.type==="skin"){
+      const isEq=(B.skin||"default")===r.skin;
+      right='<button class="skin-btn'+(isEq?' eq':'')+'" type="button" data-skin="'+r.skin+'">'+(isEq?tr("equipped"):tr("equip"))+'</button>';
+    }
+    list+='<div class="rm-item '+(unl?'unlocked':'locked')+'"><div><div style="font-weight:900;font-size:.86rem">'+r.ic+' '+t+'</div><div style="font-size:.74rem;color:var(--mute);margin-top:2px">'+d+'</div></div>'+right+'</div>';
+  }
+  list+='</div>';
+  ov('<h1>'+tr("rewTitle")+'</h1><p>'+tr("rewSub")+'</p>'+list+bt("menu",tr("backMenu"),"g"));
+}
+
+function trophies(){
+  screen="trophies";
+  let list='<div class="badges">';
+  for(const a of L().ach){
+    const on=!!B.ach[a.id];
+    list+='<div class="bdg'+(on?' on':'')+'"><span>'+(on?a.ic:'🔒')+'</span><div><b>'+a.t+'</b><br>'+a.d+'</div></div>';
+  }
+  list+='</div>';
+  ov('<h1>'+tr("tTitle")+'</h1><p>'+tr("tSub")+'</p>'+list+bt("menu",tr("backMenu"),"g"));
+}
+
+function ready(){
+  screen="duel";
+  const d=duel;
+  ov('<h1>'+tr("rTitle",{r:d.r+1})+'</h1><p>'+tr("rTurn",{p:d.p+1})+'</p><p>'+(d.p?tr("rBeat",{s:d.s[d.r][0]}):tr("rNextNote"))+'</p>'+bt("dstart",tr("rGo")));
+}
+
+function dfin(){
+  screen="duel";
+  const d=duel;d.s[d.r][d.p]=sc;
+  if(d.p===0){d.p=1;ov('<h1>'+sc+' '+tr("pts")+'!</h1><p>'+tr("dPass",{p:2,s:sc})+'</p>'+bt("dready",tr("dReady")));return}
+  const[a,b]=d.s[d.r];if(a>b)d.w[0]++;else if(b>a)d.w[1]++;const done=d.w[0]===2||d.w[1]===2||d.r===2;
+  let h='<h1>'+tr("rTitle",{r:d.r+1})+'</h1><p><b>'+a+'</b> : <b>'+b+'</b> — '+(a>b?tr("dP1"):b>a?tr("dP2"):tr("dTie"))+'</p><p>'+tr("dStand",{a:d.w[0],b:d.w[1]})+'</p>';
+  if(done){
+    const ta=d.s.reduce((x,r)=>x+r[0],0),tb=d.s.reduce((x,r)=>x+r[1],0),win=d.w[0]!==d.w[1]?(d.w[0]>d.w[1]?0:1):(ta>tb?0:tb>ta?1:-1);
+    if(win>=0)unlock("win");
+    h='<h1>'+(win<0?tr("dDraw"):tr("dWin",{w:win+1}))+'</h1><p>'+tr("dFinal",{w0:d.w[0],w1:d.w[1],t0:ta,t1:tb})+'</p>'+bt("duel",tr("dRematch"))+bt("menu",tr("menu"),"g");fanfare();
+  }else h+=bt("dnext",tr("dNext"));
+  ov(h);
+}
+
+function fin(){
+  const m=cfg.mode;if(m==="duel")return dfin();
+  screen="fin";
+  $("lvl_badge").hidden=true;
+  $("perk_strip").innerHTML="";
+
+  const finalSc=m==="arcade"?(totalArcadeSc+sc):sc;
+  const mult=cfg.coinMult||1.0;
+  const earnedCoins=Math.max(3,Math.round((finalSc/25)*mult));
+  B.coins=(B.coins||0)+earnedCoins;
+
+  const nb=finalSc>(B[m]||0);if(nb)B[m]=finalSc;
+  if(m==="arcade"&&lvl>(B.arcadeLvl||1))B.arcadeLvl=lvl;
+  sv();
+
+  let h='<h1>'+finalSc+'</h1><p class="rk">'+rank(finalSc)+'</p>';
+  if(m==="arcade"){
+    h+='<p>'+tr("arcadeRes",{l:lvl,r:B.arcadeLvl||lvl})+'</p>';
+  }
+  if(cfg.opp){
+    const won=finalSc>cfg.opp;
+    if(won)unlock("win");
+    h+='<p><b>'+(won?tr("won"):finalSc<cfg.opp?tr("lost"):tr("tie"))+'</b>'+tr("opp",{o:cfg.opp})+'</p>';
+  }
+  h+='<p>'+(nb?tr("newRec"):tr("curRec",{r:B[m]||finalSc}))+'</p>'+
+  '<p style="color:#ffd166;font-weight:bold">'+tr("coinsEarned",{e:earnedCoins,mult:mult,tot:B.coins})+'</p>'+
+  bt("share",tr("btnShare"),"card hot")+
+  bt("again",m==="code"?tr("btnAgainCode"):m==="arcade"?tr("btnAgainLvl",{l:lvl}):tr("btnAgain"))+
+  bt("menu",tr("menu"),"g")+'<p id="msg"></p>';
+  ov(h);(nb||(cfg.opp&&finalSc>cfg.opp))?fanfare():lose();
+}
+
+async function share(){
+  let base="";try{base=location.href.split("?")[0].split("#")[0]}catch(e){}
+  const finalSc=cfg.mode==="arcade"?(totalArcadeSc+sc):sc;
+  const link=base?(base+"?c="+encodeURIComponent(cfg.code)+"&s="+finalSc):"";
+  const s=tr("shareTxt",{d:cfg.mode==="daily"?tr("shareDaily"):"",rk:playerTitle(),sc:finalSc,c:cfg.code})+(link?tr("shareLink")+link:"");
+  try{if(navigator.share){await navigator.share({title:tr("shareTitle"),text:s});return}}catch(e){}
+  try{await navigator.clipboard.writeText(s);$("msg").textContent=tr("copied")}catch(e){$("msg").textContent=s}
+}
+
+const AC={
+  menu,trophies,rewards,share,end:fin,lang:toggleLang,
+  dEasy:()=>setDiff("easy"),dNorm:()=>setDiff("normal"),dHard:()=>setDiff("hard"),
+  arcade:(sl)=>start({mode:"arcade",code:rc(),startLvl:typeof sl==="number"?sl:(B.arcadeLvl||1)}),
+  nextArcade:startNextArcadeLevel,
+  solo:()=>start({mode:"solo",code:rc(),label:tr("lblSolo")}),
+  chill:()=>start({mode:"chill",code:rc(),pen:0,time:60,coinMult:0.5,label:tr("lblChill")}),
+  daily:()=>start({mode:"daily",code:"TAG"+new Date().toISOString().slice(5,10).replace("-",""),cols:5,pen:2,time:45,coinMult:1.0,label:tr("lblDaily")}),
+  again:()=>cfg.mode==="code"?start({...cfg,opp:sc}):cfg.mode==="daily"?AC.daily():cfg.mode==="arcade"?AC.arcade(lvl):AC[cfg.mode](),
+  codeS:()=>{screen="codeS";ov('<h1>'+tr("cTitle")+'</h1><p>'+tr("cSub")+'</p><div><label>'+tr("cLblCode")+'</label><input id="ic" maxlength="6" placeholder="K7F2"></div><div><label>'+tr("cLblPts")+'</label><input class="s" id="io" inputmode="numeric" placeholder="0"></div>'+bt("codeGo",tr("cStart"))+bt("menu",tr("back"),"g"))},
+  codeGo:()=>{const c=$("ic").value.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6)||rc();start({mode:"code",code:c,opp:+$("io").value||0,cols:5,pen:2,time:45,coinMult:1.0,label:tr("lblCode")})},
+  duel:()=>{duel={base:rc(),r:0,p:0,s:[[0,0],[0,0],[0,0]],w:[0,0]};ready()},
+  dready:ready,dnext:()=>{duel.r++;duel.p=0;ready()},
+  dstart:()=>start({mode:"duel",code:duel.base+duel.r,cols:5,pen:2,time:45,coinMult:1.0,label:tr("lblDuel",{r:duel.r+1,p:duel.p+1})}),
+  reviveFree:()=>{used=1;t=15;lsec=0;run=true;ov(null);go()},
+  reviveCoins:()=>{
+    if((B.coins||0)<REVIVE_COST)return;
+    B.coins-=REVIVE_COST;sv();
+    used=1;t=10;lsec=0;run=true;
+    [523,659,784].forEach((f,i)=>tn(f,.14,"triangle",.15,0,i*.06));
+    ov(null);go();
+  }
+};
+
+function checkUrl(){
+  try{
+    const p=new URLSearchParams(location.search);
+    const c=p.get("c"),s=parseInt(p.get("s")||"0",10);
+    if(c){
+      const clean=c.toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+      if(clean){
+        screen="challenge";
+        const langBtn='<div style="display:flex;justify-content:flex-end"><button class="ic" type="button" style="margin:0" data-a="lang">'+(lang==="de"?"🇩🇪 DE":"🇬🇧 EN")+'</button></div>';
+        ov(langBtn+'<h1>'+tr("chTitle")+'</h1><p>'+tr("chSub",{c:clean})+'</p><h1 style="color:var(--c0)">'+(s>0?s+' '+tr("pts"):tr("chBest"))+'</h1><p>'+tr("chDesc")+'</p>'+bt("urlGo",tr("chAccept"),"card hot")+bt("menu",tr("chMenu"),"g"));
+        AC.urlGo=()=>start({mode:"code",code:clean,opp:s,cols:5,pen:2,time:45,coinMult:1.0,label:tr("lblCode")});
+        return true;
+      }
+    }
+  }catch(e){}
+  return false;
+}
+
+lvl=B.arcadeLvl||1;
+applySkin();
+fresh();
+applyLang();
+checkDailyStreak();
+if(!checkUrl())menu();
+</script>
+</body>
+</html>
