@@ -38,13 +38,39 @@ body.sk-godmode{
   --c0:#ff007f;--c1:#00ffff;--c2:#ffff00;--c3:#ff7700;--c4:#9900ff;
   --glow:0 0 45px rgba(255,0,127,.65)
 }
-body.sk-retro .cell{border-radius:4px!important;font-family:monospace;box-shadow:inset -3px -3px 0 rgba(0,0,0,.45),inset 3px 3px 0 rgba(255,255,255,.4)!important}
-body.sk-retro #grid{border-radius:6px!important}
+body.sk-retro .cell, body.lv-shape-notched .cell{
+  border-radius:6px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.32),inset 0 -3px 0 rgba(0,0,0,.38),0 2px 8px rgba(0,0,0,.28)!important
+}
+body.sk-retro #grid, body.lv-shape-notched #grid{border-radius:14px!important}
+body.lv-shape-squircle .cell{
+  border-radius:18px!important;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.42),inset 0 -4px 0 rgba(0,0,0,.25),0 4px 10px rgba(0,0,0,.24)!important
+}
+body.lv-shape-orb .cell{
+  border-radius:50%!important;
+  box-shadow:inset 0 2px 4px rgba(255,255,255,.48),inset 0 -4px 6px rgba(0,0,0,.3),0 4px 10px rgba(0,0,0,.26)!important
+}
+body.lv-shape-orb #grid{border-radius:26px!important}
+body.lv-shape-jewel .cell{
+  border-radius:22px 6px 22px 6px!important;
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.45),inset 0 -4px 0 rgba(0,0,0,.28),0 4px 10px rgba(0,0,0,.25)!important
+}
+body.lv-shape-pill .cell{
+  border-radius:999px!important;
+  box-shadow:inset 0 2px 3px rgba(255,255,255,.45),inset 0 -4px 5px rgba(0,0,0,.28),0 3px 9px rgba(0,0,0,.25)!important
+}
+body.lv-shape-frosted .cell{
+  border-radius:15px!important;
+  border:1px solid rgba(255,255,255,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -6px 14px rgba(0,0,0,.26),0 6px 14px rgba(0,0,0,.28)!important
+}
 
 html,body{height:100%;margin:0;width:100%}
 body{
   background:
-    radial-gradient(circle at 50% 0%,rgba(157,78,221,.22),transparent 58%),
+    radial-gradient(circle at 50% 0%,color-mix(in srgb,var(--c0) 26%,transparent),transparent 58%),
+    radial-gradient(circle at 85% 85%,color-mix(in srgb,var(--c3) 16%,transparent),transparent 55%),
     radial-gradient(var(--dot) 1.6px,transparent 1.8px) 0 0/22px 22px,
     var(--bg);
   color:var(--ink);
@@ -121,10 +147,10 @@ body.frozen{box-shadow:inset 0 0 55px rgba(0,229,255,.55)}
 #grid.combo-glow{box-shadow:0 0 32px rgba(255,42,133,.65),inset 0 0 0 2px var(--c0)}
 #fx{position:absolute;left:0;top:0;pointer-events:none;z-index:2}
 .cell{
-  border:0;border-radius:13px;font-size:1.38rem;padding:0;
-  color:rgba(255,255,255,.97);text-shadow:0 1px 3px rgba(0,0,0,.45);
-  box-shadow:inset 0 -4px 0 rgba(0,0,0,.28),inset 0 2.5px 0 rgba(255,255,255,.38),0 2px 6px rgba(0,0,0,.25);
-  cursor:pointer;transition:transform .08s,filter .15s;
+  border:0;border-radius:13px;font-size:1.36rem;padding:0;
+  color:rgba(255,255,255,.98);text-shadow:0 1px 2px rgba(0,0,0,.38);
+  box-shadow:inset 0 -3.5px 0 rgba(0,0,0,.24),inset 0 2px 0 rgba(255,255,255,.38),0 2px 7px rgba(0,0,0,.22);
+  cursor:pointer;transition:transform .08s,filter .18s,border-radius .28s cubic-bezier(.22,1,.36,1),box-shadow .28s ease,background .28s ease;
   display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden
 }
 .cell::after{
@@ -141,7 +167,19 @@ body.frozen{box-shadow:inset 0 0 55px rgba(0,229,255,.55)}
 @keyframes pulseSp{from{transform:scale(.92) rotate(-3deg)}to{transform:scale(1.06) rotate(3deg)}}
 .sh{animation:sh .34s}
 @keyframes sh{20%{transform:translateX(-9px) rotate(-1.5deg)}50%{transform:translateX(9px) rotate(1.5deg)}80%{transform:translateX(-4px)}}
-@media (prefers-reduced-motion:reduce){.cell.n,.sh,.low,.sp-joker,.sp-ice,.sp-bomb{animation:none}}
+#grid.theme-morph{animation:morphGrid .52s cubic-bezier(.34,1.56,.64,1)}
+#grid.theme-morph .cell{animation:morphCell .46s cubic-bezier(.34,1.56,.64,1)}
+@keyframes morphGrid{
+  0%{transform:scale(.95) rotate(-1deg)}
+  55%{transform:scale(1.03) rotate(.8deg)}
+  100%{transform:none}
+}
+@keyframes morphCell{
+  0%{transform:scale(.76) rotate(-8deg)}
+  65%{transform:scale(1.08) rotate(3deg)}
+  100%{transform:none}
+}
+@media (prefers-reduced-motion:reduce){.cell.n,.sh,.low,.sp-joker,.sp-ice,.sp-bomb,#grid.theme-morph,#grid.theme-morph .cell{animation:none}}
 .hint{color:var(--mute);font-size:.78rem;text-align:center;min-height:1.1em;font-weight:bold;letter-spacing:.2px}
 
 #ov{
@@ -277,7 +315,19 @@ label{font-size:.8rem;color:var(--mute);font-weight:bold}
 
 <script>
 const N=7,BM=5,JK=6,IC=7,$=i=>document.getElementById(i);
-const SH=["♥","●","▲","■","★"];
+const SH_SETS=[
+  ["♥","●","▲","■","★"],
+  ["◆","●","✦","▲","⬟"],
+  ["⚡","🔥","💧","🍀","⭐"],
+  ["♦","♠","♣","♥","★"],
+  ["◈","◉","△","▣","✿"]
+];
+const getShapes=()=>{
+  if(cfg.mode==="arcade")return SH_SETS[(Math.max(1,lvl)-1)%SH_SETS.length];
+  const stage=Math.floor(Math.max(0,sc)/SCORE_STEP);
+  const seed=hash(String(cfg.mode||"solo")+":"+String(cfg.code||""));
+  return SH_SETS[(seed+stage)%SH_SETS.length];
+};
 const AL="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 const REVIVE_COST=150;
 
@@ -491,7 +541,149 @@ const rank=s=>(L().ranks.filter(r=>s>=r[0]).pop()||L().ranks[0])[1];
 const playerTitle=()=>(L().lvlRanks.filter(r=>(B.arcadeLvl||1)>=r[0]).pop()||L().lvlRanks[0])[1];
 const rc=()=>{let s="";for(let i=0;i<4;i++)s+=AL[Math.random()*AL.length|0];return s};
 
+const SCORE_STEP=300;
+let activeThemeKey="";
+
+const LVL_THEMES=[
+  {
+    de:"Sunset Mango",en:"Sunset Mango",shape:"squircle",
+    bg:"#190b12",dot:"#3d192b",panel:"#26101b",panel2:"#361727",line:"#59243f",
+    c0:"#ff4d79",c1:"#ff9e1b",c2:"#ffdd33",c3:"#ff6b4a",c4:"#d946ef",
+    glow:"0 0 30px rgba(255,107,74,.32)"
+  },
+  {
+    de:"Coral Fiesta",en:"Coral Fiesta",shape:"orb",
+    bg:"#1b0c09",dot:"#421c14",panel:"#29120d",panel2:"#3a1912",line:"#5e281d",
+    c0:"#ff5a5f",c1:"#ffb703",c2:"#fb8500",c3:"#ff70a6",c4:"#ffca3a",
+    glow:"0 0 30px rgba(255,90,95,.32)"
+  },
+  {
+    de:"Peach Sorbet",en:"Peach Sorbet",shape:"pill",
+    bg:"#1a0d12",dot:"#3d1d29",panel:"#29141c",panel2:"#3a1c28",line:"#5c2c3f",
+    c0:"#ff758f",c1:"#ffb347",c2:"#ff9ebb",c3:"#ffd166",c4:"#e056fd",
+    glow:"0 0 30px rgba(255,117,143,.3)"
+  },
+  {
+    de:"Berry Fizz",en:"Berry Fizz",shape:"frosted",
+    bg:"#16091f",dot:"#36154d",panel:"#220e30",panel2:"#301445",line:"#4e2170",
+    c0:"#ff2e93",c1:"#ff9f1c",c2:"#c77dff",c3:"#ffbe0b",c4:"#fb5607",
+    glow:"0 0 30px rgba(255,46,147,.32)"
+  },
+  {
+    de:"Golden Papaya",en:"Golden Papaya",shape:"jewel",
+    bg:"#191005",dot:"#3d270c",panel:"#261808",panel2:"#36220b",line:"#593812",
+    c0:"#ff8800",c1:"#ff3366",c2:"#ffd000",c3:"#ff6d00",c4:"#f72585",
+    glow:"0 0 30px rgba(255,136,0,.32)"
+  },
+  {
+    de:"Citrus Splash",en:"Citrus Splash",shape:"orb",
+    bg:"#171205",dot:"#382b0c",panel:"#241c08",panel2:"#33280c",line:"#544113",
+    c0:"#ff9f1c",c1:"#ff4081",c2:"#ffea00",c3:"#ff5400",c4:"#b5179e",
+    glow:"0 0 30px rgba(255,159,28,.32)"
+  },
+  {
+    de:"Raspberry Pop",en:"Raspberry Pop",shape:"pill",
+    bg:"#1a0915",dot:"#3d1430",panel:"#290d20",panel2:"#3a132e",line:"#5e1f4a",
+    c0:"#ff1e7a",c1:"#ffaa00",c2:"#ff66b3",c3:"#ffe600",c4:"#9d4edd",
+    glow:"0 0 30px rgba(255,30,122,.32)"
+  },
+  {
+    de:"Warm Pistachio",en:"Warm Pistachio",shape:"frosted",
+    bg:"#111608",dot:"#273312",panel:"#19210b",panel2:"#243010",line:"#3c4f1a",
+    c0:"#aacc00",c1:"#ff6b6b",c2:"#ffbe0b",c3:"#ff8e53",c4:"#e07a5f",
+    glow:"0 0 28px rgba(170,204,0,.28)"
+  },
+  {
+    de:"Velvet Plum",en:"Velvet Plum",shape:"jewel",
+    bg:"#15081a",dot:"#32123d",panel:"#200c26",panel2:"#2e1136",line:"#4b1c59",
+    c0:"#e040fb",c1:"#ff6e40",c2:"#ffd740",c3:"#ff4081",c4:"#aa00ff",
+    glow:"0 0 30px rgba(224,64,251,.3)"
+  },
+  {
+    de:"Sunrise Punch",en:"Sunrise Punch",shape:"squircle",
+    bg:"#1c0b0e",dot:"#401920",panel:"#2b1116",panel2:"#3d181f",line:"#612631",
+    c0:"#ff3b6b",c1:"#ffbe0b",c2:"#ff7b00",c3:"#ff70a6",c4:"#c77dff",
+    glow:"0 0 32px rgba(255,59,107,.34)"
+  }
+];
+
+const ALL_SHAPES=["squircle","orb","pill","frosted","jewel"];
+
+function getThemeByIndex(themeIdx, shapeOverride){
+  const idx=((themeIdx%LVL_THEMES.length)+LVL_THEMES.length)%LVL_THEMES.length;
+  const cycle=Math.floor(Math.max(0,themeIdx)/LVL_THEMES.length);
+  const base=LVL_THEMES[idx];
+  const shape=shapeOverride||ALL_SHAPES[(idx+cycle*2)%ALL_SHAPES.length];
+  return {...base,shape};
+}
+
+function getLevelTheme(lv){
+  const idx=(Math.max(1,lv)-1)%LVL_THEMES.length;
+  const cycle=Math.floor((Math.max(1,lv)-1)/LVL_THEMES.length);
+  const base=LVL_THEMES[idx];
+  if(cycle===0)return base;
+  return {...base,shape:ALL_SHAPES[(lv+cycle*2)%ALL_SHAPES.length]};
+}
+
+function clearLevelThemeVars(){
+  const s=document.documentElement.style;
+  ["--bg","--dot","--panel","--panel2","--line","--c0","--c1","--c2","--c3","--c4","--glow"].forEach(k=>s.removeProperty(k));
+  document.body.classList.remove("lv-shape-orb","lv-shape-jewel","lv-shape-pill","lv-shape-notched","lv-shape-frosted","lv-shape-squircle");
+}
+
+function triggerMorphAnim(){
+  grid.classList.remove("theme-morph");
+  void grid.offsetWidth;
+  grid.classList.add("theme-morph");
+  ringFx(3,3,getComputedStyle(document.documentElement).getPropertyValue("--c0").trim()||"#ff5d9e",135);
+  confetti();
+  kick();
+}
+
+function applyPaletteTheme(th, key, animate=false){
+  clearLevelThemeVars();
+  document.body.classList.remove("sk-cyber","sk-void","sk-retro","sk-gold","sk-godmode");
+  const s=document.documentElement.style;
+  s.setProperty("--bg",th.bg);
+  s.setProperty("--dot",th.dot);
+  s.setProperty("--panel",th.panel);
+  s.setProperty("--panel2",th.panel2);
+  s.setProperty("--line",th.line);
+  s.setProperty("--c0",th.c0);
+  s.setProperty("--c1",th.c1);
+  s.setProperty("--c2",th.c2);
+  s.setProperty("--c3",th.c3);
+  s.setProperty("--c4",th.c4);
+  s.setProperty("--glow",th.glow);
+  if(th.shape)document.body.classList.add("lv-shape-"+th.shape);
+  if(animate && activeThemeKey && activeThemeKey!==key){
+    triggerMorphAnim();
+    const label=lang==="de"?th.de:th.en;
+    ft("✨ "+label,2,3,th.c0,19);
+    showToast("✨ "+label);
+  }
+  activeThemeKey=key;
+}
+
+function applyLevelTheme(lv, animate=false){
+  const th=getLevelTheme(lv);
+  applyPaletteTheme(th,"lvl:"+lv,animate);
+}
+
+function syncModeTheme(animate=false){
+  if(!run)return;
+  if(cfg.mode==="arcade"){
+    applyLevelTheme(lvl,animate);
+    return;
+  }
+  const stage=Math.floor(Math.max(0,sc)/SCORE_STEP);
+  const modeSeed=hash(String(cfg.mode||"solo")+":"+String(cfg.code||""));
+  const th=getThemeByIndex(modeSeed+stage);
+  applyPaletteTheme(th,"mode:"+(cfg.mode||"solo")+":st"+stage,animate);
+}
+
 function applySkin(){
+  clearLevelThemeVars();
   document.body.classList.remove("sk-cyber","sk-void","sk-retro","sk-gold","sk-godmode");
   if(B.skin&&B.skin!=="default")document.body.classList.add("sk-"+B.skin);
 }
@@ -664,7 +856,7 @@ function render(){
     else if(v===IC){e.style.background="";e.textContent="❄️";cls+=" sp-ice"}
     else{
       e.style.background="radial-gradient(circle at 30% 25%,rgba(255,255,255,.45),transparent 55%),var(--c"+v+")";
-      e.textContent=SH[v];
+      e.textContent=getShapes()[v];
     }
     e.className=cls;
   }
@@ -756,6 +948,9 @@ function checkArcadeLevelComplete(){
 
 function showLevelClear(){
   const sp=nextLvlCfg||getArcadeSpec(lvl+1);
+  const nextTh=getLevelTheme(lvl+1);
+  const thName=lang==="de"?nextTh.de:nextTh.en;
+  applyLevelTheme(lvl+1);
   let unlHtml="";
   if(justUnlocked){
     const t=lang==="de"?justUnlocked.deT:justUnlocked.enT;
@@ -766,7 +961,7 @@ function showLevelClear(){
     '<h1>'+tr("lvlClearTitle",{l:lvl})+'</h1>'+
     unlHtml+
     '<p>'+tr("lvlClearSub",{next:lvl+1})+'</p>'+
-    '<div class="stat-box">'+tr("lvlSpecs",{t:sp.time,g:sp.goal,c:sp.cols,p:sp.pen})+'</div>'+
+    '<div class="stat-box"><div>🎨 Design: <b>'+thName+'</b></div>'+tr("lvlSpecs",{t:sp.time,g:sp.goal,c:sp.cols,p:sp.pen})+'</div>'+
     bt("nextArcade",tr("lvlNextBtn",{next:lvl+1}),"card grn")+
     bt("end",tr("endRound"),"g")
   );
@@ -805,7 +1000,12 @@ function tap(i){
   const now=Date.now();
   if(now-last>1650)combo=1;
   const n=q.length,pts=n*n*combo,bonus=v<BM?Math.max(0,n-4):0;
+  const prevStage=Math.floor(Math.max(0,sc)/SCORE_STEP);
   sc+=pts;t+=bonus;
+  const nextStage=Math.floor(Math.max(0,sc)/SCORE_STEP);
+  if(cfg.mode!=="arcade" && nextStage>prevStage){
+    syncModeTheme(true);
+  }
   if(v<BM)sPop(n,combo);
 
   const scEl=$("sc");scEl.classList.add("pop-num");setTimeout(()=>scEl.classList.remove("pop-num"),130);
@@ -888,11 +1088,17 @@ function start(c){
   au();sc=0;t=cfg.time;freeze=0;combo=1;last=0;used=0;lsec=0;run=true;
   shieldReady=(!fairMode && (B.arcadeLvl||1)>=6 && cfg.pen>0);
 
-  if(cfg.mode==="arcade"&&!c.keepLvl){
-    lvl=c.startLvl||(B.arcadeLvl||1);totalArcadeSc=0;
-    const sp=getArcadeSpec(lvl);
-    cfg.cols=sp.cols;cfg.time=sp.time+timeBonus;cfg.maxTime=sp.time+timeBonus;cfg.pen=sp.pen;
-    t=cfg.time;lvlGoal=sp.goal;
+  activeThemeKey="";
+  if(cfg.mode==="arcade"){
+    if(!c.keepLvl){
+      lvl=c.startLvl||(B.arcadeLvl||1);totalArcadeSc=0;
+      const sp=getArcadeSpec(lvl);
+      cfg.cols=sp.cols;cfg.time=sp.time+timeBonus;cfg.maxTime=sp.time+timeBonus;cfg.pen=sp.pen;
+      t=cfg.time;lvlGoal=sp.goal;
+    }
+    applyLevelTheme(lvl,false);
+  }else{
+    syncModeTheme(false);
   }
   fresh();ov(null);
   renderPerks();
@@ -956,6 +1162,7 @@ $("q").onclick=()=>{run=false;freeze=0;document.body.classList.remove("frozen");
 
 function menu(){
   screen="menu";
+  applySkin();
   $("lvl_badge").hidden=true;
   $("perk_strip").innerHTML="";
   const uCount=Object.keys(B.ach).length;
